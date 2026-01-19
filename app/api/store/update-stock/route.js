@@ -3,14 +3,19 @@ import authSeller from "@/middlewares/authSeller";
 import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-// toggle stock of a product
+// update stock of a product
 export async function POST(request){
     try {
         const { userId } = getAuth(request)
-        const { productId } = await request.json()
+        const { productId, stock } = await request.json()
 
-        if(!productId){
-            return NextResponse.json({ error: "missing details: productId" }, { status: 400 });
+        if(!productId || stock === undefined){
+            return NextResponse.json({ error: "missing details: productId or stock" }, { status: 400 });
+        }
+
+        // Validate stock is a non-negative number
+        if(typeof stock !== 'number' || stock < 0 || !Number.isInteger(stock)){
+            return NextResponse.json({ error: 'stock must be a non-negative integer' }, { status: 400 })
         }
 
         const storeId = await authSeller(userId)
@@ -28,12 +33,15 @@ export async function POST(request){
             return NextResponse.json({ error: 'no product found' }, { status: 404 })
         }
 
-        await prisma.product.update({
+        const updatedProduct = await prisma.product.update({
             where: { id: productId },
-            data: {inStock: !product.inStock}
+            data: { stock: stock }
         })
 
-        return NextResponse.json({message: "Product stock updated successfully"})
+        return NextResponse.json({
+            message: "Product stock updated successfully",
+            product: updatedProduct
+        })
     } catch (error) {
         console.error(error);
         return NextResponse.json({ error: error.code || error.message }, { status: 400 })
