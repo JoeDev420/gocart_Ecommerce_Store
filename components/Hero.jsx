@@ -24,7 +24,19 @@ const Hero = () => {
                         <div className='text-slate-800 text-sm font-medium mt-4 sm:mt-8'>
                             <p>Starts from</p>
                             <p className='text-3xl'>{currency}4.90</p>
-                        </div>
+
+                            {/* Learn more button */}
+                            <a
+                                href="#specs"
+                                className="group inline-flex items-center gap-2 mt-4 px-6 py-3 bg-black text-white text-sm rounded-full hover:bg-slate-900 transition"
+                            >
+                                Learn more
+                                <ArrowRightIcon
+                                size={18}
+                                className="transition-all group-hover:translate-x-1"
+                                />
+                            </a>
+                            </div>
                         
                     </div>
                     <Image className='sm:absolute bottom-0 right-0 md:right-10 w-full sm:max-w-sm' src={assets.hero_model_img} alt="" />
