@@ -7,12 +7,11 @@ import LatestProducts from "@/components/LatestProducts";
 
 export default function Home() {
     return (
-        <div>
+        <div className="scroll-smooth">
             <Hero />
             <LatestProducts />
             <BestSelling />
             <OurSpecs />
-            <Newsletter />
         </div>
     );
 }
