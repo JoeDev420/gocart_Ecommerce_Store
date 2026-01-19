@@ -3,25 +3,33 @@ import ProductDescription from "@/components/ProductDescription";
 import ProductDetails from "@/components/ProductDetails";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+
 
 export default function Product() {
 
     const { productId } = useParams();
     const [product, setProduct] = useState();
-    const products = useSelector(state => state.product.list);
+
 
     const fetchProduct = async () => {
-        const product = products.find((product) => product.id === productId);
-        setProduct(product);
-    }
+  const res = await fetch(`/api/products/${productId}`, {
+    cache: "no-store", // 🚨 critical
+  });
+
+  if (!res.ok) return;
+
+  const data = await res.json();
+  setProduct(data.product);
+};
+
 
     useEffect(() => {
-        if (products.length > 0) {
-            fetchProduct()
-        }
-        scrollTo(0, 0)
-    }, [productId,products]);
+  if (productId) {
+    fetchProduct();
+    scrollTo(0, 0);
+  }
+}, [productId]);
+
 
     return (
         <div className="mx-6">
@@ -37,6 +45,8 @@ export default function Product() {
 
                 {/* Description & Reviews */}
                 {product && (<ProductDescription product={product} />)}
+
+
             </div>
         </div>
     );
