@@ -33,7 +33,7 @@ const Hero = () => {
                     <div className='flex-1 flex items-center justify-between w-full bg-orange-200 rounded-3xl p-6 px-8 group'>
                         <div>
                             <p className='text-3xl font-medium bg-gradient-to-r from-slate-800 to-[#FFAD51] bg-clip-text text-transparent max-w-40'>Best products</p>
-                            <a href='#best' className='flex items-center gap-1 mt-4'>View<ArrowRightIcon className='group-hover:ml-2 transition-all' size={18} /> </a>
+                            <a href='#best' className='flex items-center gap-1 mt-4'>View<ArrowRightIcon className='group-hover:ml-2 transition-all' size={18} /> </a   >
                         </div>
                         <Image className='w-35' src={assets.hero_product_img1} alt="" />
                     </div>

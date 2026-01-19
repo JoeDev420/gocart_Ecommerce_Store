@@ -14,7 +14,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
     return (
         <ClerkProvider>
-            <html lang="en">
+            <html lang="en" className="scroll-smooth">
                 <body className={`${outfit.className} antialiased`}>
                     <StoreProvider>
                         <Toaster />
