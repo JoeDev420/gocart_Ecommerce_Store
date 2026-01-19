@@ -42,7 +42,7 @@ const Hero = () => {
                             <p className='text-3xl font-medium bg-gradient-to-r from-slate-800 to-[#78B2FF] bg-clip-text text-transparent max-w-40'>20% discounts</p>
 
                             <Link
-                                href="/learn-more"
+                                href="/pricing"
                                 className="group flex items-center gap-1 mt-4"
                                 >
                                 Learn more
