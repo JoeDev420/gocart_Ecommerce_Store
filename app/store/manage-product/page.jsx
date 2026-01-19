@@ -28,22 +28,32 @@ export default function StoreManageProducts() {
         setLoading(false)
     }
 
-        const updateStock = async (productId, newStock) => {
-    try {
-        const token = await getToken()
-        const { data } = await axios.post('/api/store/update-stock', 
-        { productId, stock: newStock }, 
-        { headers: { Authorization: `Bearer ${token}` } }
-        )
-        setProducts(prevProducts => 
-        prevProducts.map(product => 
-            product.id === productId ? {...product, stock: newStock} : product
-        )
-        )
-        toast.success(data.message)
-    } catch (error) {
-        toast.error(error?.response?.data?.error || error.message)
+    const updateStock = async (productId, newStock) => {
+        try {
+            const token = await getToken()
+            const { data } = await axios.post('/api/store/update-stock', 
+                { productId, stock: newStock }, 
+                { headers: { Authorization: `Bearer ${token}` } }
+            )
+            setProducts(prevProducts => 
+                prevProducts.map(product => 
+                    product.id === productId ? {...product, stock: newStock} : product
+                )
+            )
+            toast.success(data.message)
+        } catch (error) {
+            toast.error(error?.response?.data?.error || error.message)
+        }
     }
+
+    const handleStockChange = (productId, value) => {
+        const newStock = parseInt(value) || 0
+        if (newStock >= 0) {
+            toast.promise(
+                updateStock(productId, newStock),
+                { loading: "Updating stock..." }
+            )
+        }
     }
 
     useEffect(() => {
@@ -57,14 +67,15 @@ export default function StoreManageProducts() {
     return (
         <>
             <h1 className="text-2xl text-slate-500 mb-5">Manage <span className="text-slate-800 font-medium">Products</span></h1>
-            <table className="w-full max-w-4xl text-left  ring ring-slate-200  rounded overflow-hidden text-sm">
+            <table className="w-full max-w-4xl text-left ring ring-slate-200 rounded overflow-hidden text-sm">
                 <thead className="bg-slate-50 text-gray-700 uppercase tracking-wider">
                     <tr>
                         <th className="px-4 py-3">Name</th>
                         <th className="px-4 py-3 hidden md:table-cell">Description</th>
                         <th className="px-4 py-3 hidden md:table-cell">MRP</th>
                         <th className="px-4 py-3">Price</th>
-                        <th className="px-4 py-3">Actions</th>
+                        <th className="px-4 py-3">Stock</th>
+                        <th className="px-4 py-3">Status</th>
                     </tr>
                 </thead>
                 <tbody className="text-slate-700">
@@ -79,12 +90,19 @@ export default function StoreManageProducts() {
                             <td className="px-4 py-3 max-w-md text-slate-600 hidden md:table-cell truncate">{product.description}</td>
                             <td className="px-4 py-3 hidden md:table-cell">{currency} {product.mrp.toLocaleString()}</td>
                             <td className="px-4 py-3">{currency} {product.price.toLocaleString()}</td>
+                            <td className="px-4 py-3">
+                                <input 
+                                    type="number" 
+                                    min="0"
+                                    value={product.stock}
+                                    onChange={(e) => handleStockChange(product.id, e.target.value)}
+                                    className="w-20 px-2 py-1 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-slate-400"
+                                />
+                            </td>
                             <td className="px-4 py-3 text-center">
-                                <label className="relative inline-flex items-center cursor-pointer text-gray-900 gap-3">
-                                    <input type="checkbox" className="sr-only peer" onChange={() => toast.promise(toggleStock(product.id), { loading: "Updating data..." })} checked={product.inStock} />
-                                    <div className="w-9 h-5 bg-slate-300 rounded-full peer peer-checked:bg-green-600 transition-colors duration-200"></div>
-                                    <span className="dot absolute left-1 top-1 w-3 h-3 bg-white rounded-full transition-transform duration-200 ease-in-out peer-checked:translate-x-4"></span>
-                                </label>
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${product.stock > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                    {product.stock > 0 ? 'Available' : 'Out of Stock'}
+                                </span>
                             </td>
                         </tr>
                     ))}
