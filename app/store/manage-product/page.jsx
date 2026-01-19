@@ -3,7 +3,6 @@ import { useEffect, useState } from "react"
 import { toast } from "react-hot-toast"
 import Image from "next/image"
 import Loading from "@/components/Loading"
-import { productDummyData } from "@/assets/assets"
 import { useAuth, useUser } from "@clerk/nextjs"
 import axios from "axios"
 
@@ -17,44 +16,78 @@ export default function StoreManageProducts() {
     const [loading, setLoading] = useState(true)
     const [products, setProducts] = useState([])
 
+    const [editedStocks, setEditedStocks] = useState({});
+    const [updatingId, setUpdatingId] = useState(null);
+
+    const handleStockInputChange = (productId, value) => {
+
+            const newStock = Math.max(0, parseInt(value) || 0);
+
+            setEditedStocks(prev => ({
+                ...prev,
+                [productId]: newStock
+            }));
+        };
+
+
+
     const fetchProducts = async () => {
         try {
              const token = await getToken()
              const { data } = await axios.get('/api/store/product', {headers: { Authorization: `Bearer ${token}` } })
-             setProducts(data.products.sort((a, b)=> new Date(b.createdAt) - new Date(a.createdAt)))
+             setProducts(data.products.sort((a, b)=> new Date(b.createdAt) - new Date(a.createdAt)));
+
+                const stockMap = {};
+                data.products.forEach(p => {
+                stockMap[p.id] = p.stock;
+                });
+                setEditedStocks(stockMap);
+
         } catch (error) {
             toast.error(error?.response?.data?.error || error.message)
         }
         setLoading(false)
     }
 
-    const updateStock = async (productId, newStock) => {
-        try {
-            const token = await getToken()
-            const { data } = await axios.post('/api/store/update-stock', 
-                { productId, stock: newStock }, 
-                { headers: { Authorization: `Bearer ${token}` } }
-            )
-            setProducts(prevProducts => 
-                prevProducts.map(product => 
-                    product.id === productId ? {...product, stock: newStock} : product
-                )
-            )
-            toast.success(data.message)
-        } catch (error) {
-            toast.error(error?.response?.data?.error || error.message)
-        }
-    }
+    const updateStock = async (productId) => {
 
-    const handleStockChange = (productId, value) => {
-        const newStock = parseInt(value) || 0
-        if (newStock >= 0) {
-            toast.promise(
-                updateStock(productId, newStock),
-                { loading: "Updating stock..." }
+        try {
+            setUpdatingId(productId);
+            const token = await getToken();
+
+            const newStock = editedStocks[productId];
+
+            const { data } = await axios.post(
+            '/api/store/update-stock',
+            { productId, stock: newStock },
+            { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            setProducts(prev =>
+            prev.map(p =>
+                p.id === productId
+                    ? { ...p, stock: newStock }
+                    : p
             )
+        );
+
+            setEditedStocks(prev => ({
+                ...prev,
+                [productId]: newStock
+            }));
+
+
+            toast.success(data.message);
+        } catch (error) {
+            toast.error(error?.response?.data?.error || error.message);
+        } finally {
+            setUpdatingId(null);
         }
-    }
+
+    };
+
+
+    
 
     useEffect(() => {
         if(user){
@@ -76,6 +109,8 @@ export default function StoreManageProducts() {
                         <th className="px-4 py-3">Price</th>
                         <th className="px-4 py-3">Stock</th>
                         <th className="px-4 py-3">Status</th>
+                        <th className="px-4 py-3">Change</th>
+
                     </tr>
                 </thead>
                 <tbody className="text-slate-700">
@@ -90,20 +125,56 @@ export default function StoreManageProducts() {
                             <td className="px-4 py-3 max-w-md text-slate-600 hidden md:table-cell truncate">{product.description}</td>
                             <td className="px-4 py-3 hidden md:table-cell">{currency} {product.mrp.toLocaleString()}</td>
                             <td className="px-4 py-3">{currency} {product.price.toLocaleString()}</td>
+                            {/* STOCK INPUT */}
                             <td className="px-4 py-3">
-                                <input 
-                                    type="number" 
-                                    min="0"
-                                    value={product.stock}
-                                    onChange={(e) => handleStockChange(product.id, e.target.value)}
-                                    className="w-20 px-2 py-1 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-slate-400"
-                                />
+                            <input
+                                type="number"
+                                min="0"
+                                value={editedStocks[product.id] ?? product.stock}
+                                onChange={(e) =>
+                                handleStockInputChange(product.id, e.target.value)
+                                }
+                                className="w-20 px-2 py-1 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-slate-400"
+                            />
                             </td>
+
+                            {/* STATUS */}
                             <td className="px-4 py-3 text-center">
-                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${product.stock > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                    {product.stock > 0 ? 'Available' : 'Out of Stock'}
-                                </span>
+                            <span
+                                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                (editedStocks[product.id] ?? product.stock) > 0
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-red-100 text-red-700'
+                                }`}
+                            >
+                                {(editedStocks[product.id] ?? product.stock) > 0
+                                ? 'Available'
+                                : 'Out of Stock'}
+                            </span>
                             </td>
+
+                            {/* CHANGE BUTTON */}
+                            <td className="px-4 py-3 text-center">
+                            <button
+                                disabled={
+                                editedStocks[product.id] === product.stock ||
+                                updatingId === product.id
+                                }
+                                onClick={() =>
+                                toast.promise(updateStock(product.id), {
+                                    loading: "Updating stock..."
+                                })
+                                }
+                                className={`px-4 py-1.5 rounded text-xs font-medium transition ${
+                                editedStocks[product.id] !== product.stock
+                                    ? 'bg-slate-800 text-white hover:bg-slate-900'
+                                    : 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                                }`}
+                            >
+                                Change
+                            </button>
+                            </td>
+
                         </tr>
                     ))}
                 </tbody>
