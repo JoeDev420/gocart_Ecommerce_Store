@@ -5,7 +5,6 @@ import { NextResponse } from "next/server";
 export async function GET(request){
     try {
         let products = await prisma.product.findMany({
-            where: {inStock: true },
             include: {
                 rating: {
                     select: {

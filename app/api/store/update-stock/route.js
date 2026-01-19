@@ -35,7 +35,10 @@ export async function POST(request){
 
         const updatedProduct = await prisma.product.update({
             where: { id: productId },
-            data: { stock: stock }
+            data: { 
+                stock: stock,
+                inStock: stock > 0  // Sync the boolean field
+            }
         })
 
         return NextResponse.json({
