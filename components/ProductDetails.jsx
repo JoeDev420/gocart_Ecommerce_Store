@@ -1,12 +1,13 @@
 'use client'
 
 import { addToCart } from "@/lib/features/cart/cartSlice";
-import { StarIcon, TagIcon, EarthIcon, CreditCardIcon, UserIcon } from "lucide-react";
+import { StarIcon, TagIcon, EarthIcon, CreditCardIcon, UserIcon, PackageIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Image from "next/image";
 import Counter from "./Counter";
 import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-hot-toast";
 
 const ProductDetails = ({ product }) => {
 
@@ -21,10 +22,20 @@ const ProductDetails = ({ product }) => {
     const [mainImage, setMainImage] = useState(product.images[0]);
 
     const addToCartHandler = () => {
+        // Check stock before adding to cart
+        if (!product.inStock || product.stock === 0) {
+            toast.error(`${product.name} is out of stock`);
+            return;
+        }
+
         dispatch(addToCart({ productId }))
     }
 
     const averageRating = product.rating.reduce((acc, item) => acc + item.rating, 0) / product.rating.length;
+    
+    // Check if product is out of stock or low stock
+    const isOutOfStock = !product.inStock || product.stock === 0;
+    const isLowStock = product.stock > 0 && product.stock <= 5;
     
     return (
         <div className="flex max-lg:flex-col gap-12">
@@ -56,17 +67,38 @@ const ProductDetails = ({ product }) => {
                     <TagIcon size={14} />
                     <p>Save {((product.mrp - product.price) / product.mrp * 100).toFixed(0)}% right now</p>
                 </div>
+
+                {/* Stock Status Display */}
+                <div className="flex items-center gap-2 mt-4">
+                    <PackageIcon size={16} className={isOutOfStock ? "text-red-500" : isLowStock ? "text-orange-500" : "text-green-500"} />
+                    {isOutOfStock ? (
+                        <p className="text-red-500 font-medium">Out of Stock</p>
+                    ) : isLowStock ? (
+                        <p className="text-orange-500 font-medium">Only {product.stock} left in stock!</p>
+                    ) : (
+                        <p className="text-green-500 font-medium">In Stock ({product.stock} available)</p>
+                    )}
+                </div>
+
                 <div className="flex items-end gap-5 mt-10">
                     {
-                        cart[productId] && (
+                        cart[productId] && !isOutOfStock && (
                             <div className="flex flex-col gap-3">
                                 <p className="text-lg text-slate-800 font-semibold">Quantity</p>
                                 <Counter productId={productId} />
                             </div>
                         )
                     }
-                    <button onClick={() => !cart[productId] ? addToCartHandler() : router.push('/cart')} className="bg-slate-800 text-white px-10 py-3 text-sm font-medium rounded hover:bg-slate-900 active:scale-95 transition">
-                        {!cart[productId] ? 'Add to Cart' : 'View Cart'}
+                    <button 
+                        onClick={() => !cart[productId] ? addToCartHandler() : router.push('/cart')} 
+                        disabled={isOutOfStock}
+                        className={`px-10 py-3 text-sm font-medium rounded transition ${
+                            isOutOfStock 
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                                : 'bg-slate-800 text-white hover:bg-slate-900 active:scale-95'
+                        }`}
+                    >
+                        {isOutOfStock ? 'Out of Stock' : !cart[productId] ? 'Add to Cart' : 'View Cart'}
                     </button>
                 </div>
                 <hr className="border-gray-300 my-5" />

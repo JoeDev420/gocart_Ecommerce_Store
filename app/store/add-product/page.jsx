@@ -17,6 +17,7 @@ export default function StoreAddProduct() {
         mrp: 0,
         price: 0,
         category: "",
+        stock: 0,
     })
     const [loading, setLoading] = useState(false)
     const [aiUsed, setAiUsed] = useState(false)
@@ -28,6 +29,7 @@ export default function StoreAddProduct() {
     }
 
     const handleImageUpload = async (key, file) => {
+
         setImages(prev => ({ ...prev, [key]: file }))
 
         if (key === "1" && file && !aiUsed) {
@@ -87,6 +89,7 @@ export default function StoreAddProduct() {
             formData.append('mrp', productInfo.mrp)
             formData.append('price', productInfo.price)
             formData.append('category', productInfo.category)
+            formData.append('stock', productInfo.stock)
 
             Object.keys(images).forEach((key) => {
                 images[key] && formData.append('images', images[key])
@@ -96,7 +99,7 @@ export default function StoreAddProduct() {
             const { data } = await axios.post('/api/store/product', formData, { headers: { Authorization: `Bearer ${token}` } })
             toast.success(data.message)
 
-            setProductInfo({ name: "", description: "", mrp: 0, price: 0, category: "" })
+            setProductInfo({ name: "", description: "", mrp: 0, price: 0, category: "",stock: 0})
             setImages({ 1: null, 2: null, 3: null, 4: null })
             setAiUsed(false)
         } catch (error) {
@@ -152,6 +155,20 @@ export default function StoreAddProduct() {
                     <input type="number" name="price" onChange={onChangeHandler} value={productInfo.price} placeholder="0" className="w-full max-w-45 p-2 px-4 outline-none border border-slate-200 rounded" required />
                 </label>
             </div>
+
+            <label className="flex flex-col gap-2 ">
+                Stock Quantity
+                <input 
+                    type="number" 
+                    name="stock" 
+                    onChange={onChangeHandler} 
+                    value={productInfo.stock} 
+                    placeholder="0" 
+                    min="0"
+                    className="w-full max-w-45 p-2 px-4 outline-none border border-slate-200 rounded" 
+                    required 
+                />
+                </label>
 
             <select onChange={e => setProductInfo({ ...productInfo, category: e.target.value })} value={productInfo.category} className="w-full max-w-sm p-2 px-4 my-6 outline-none border border-slate-200 rounded" required>
                 <option value="">Select a category</option>
