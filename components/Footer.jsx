@@ -47,7 +47,7 @@ const Footer = () => {
     ]
 
     return (
-        <footer className="mx-6 bg-white">
+        <footer className="mx-6 bg-white" id="contact">
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row items-start justify-between gap-10 py-10 border-b border-slate-500/30 text-slate-500">
                     <div>

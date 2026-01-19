@@ -37,10 +37,11 @@ const Navbar = () => {
 
                     {/* Desktop Menu */}
                     <div className="hidden sm:flex items-center gap-4 lg:gap-8 text-slate-600">
-                        <Link href="/">Home</Link>
-                        <Link href="/shop">Shop</Link>
-                        <Link href="/">About</Link>
-                        <Link href="/">Contact</Link>
+
+                    <div className="flex items-center justify-center gap-17 mr-50">   
+                        <Link href="/shop">Browse</Link>
+                        <a href="#contact">Contact Us</a>
+                    </div>    
 
                         <form onSubmit={handleSearch} className="hidden xl:flex items-center w-xs text-sm gap-2 bg-slate-100 px-4 py-3 rounded-full">
                             <Search size={18} className="text-slate-600" />
