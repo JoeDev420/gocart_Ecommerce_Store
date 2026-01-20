@@ -96,28 +96,33 @@
                         description: 'Order Payment',
                         order_id: data.razorpayOrder.id,
                         handler: async function (response) {
-                            try {
+                        try {
+                            console.log('Order IDs:', data.orderIds);
+                            console.log('Response:', response);
 
-                                 console.log('Order IDs:', data.orderIds);  // ← Add this line
-                                 console.log('Response:', response);     
+                            // Get a FRESH token right before verification
+                            const freshToken = await getToken();
+                            
+                            // Verify payment
+                            await axios.post('/api/verify-payment', {
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature,
+                                orderIds: data.orderIds
+                            }, {
+                                headers: { Authorization: `Bearer ${freshToken}` }  // Use fresh token
+                            });
 
-                                // Verify payment
-                                await axios.post('/api/verify-payment', {
-                                    razorpay_order_id: response.razorpay_order_id,
-                                    razorpay_payment_id: response.razorpay_payment_id,
-                                    razorpay_signature: response.razorpay_signature,
-                                    orderIds: data.orderIds
-                                }, {
-                                    headers: { Authorization: `Bearer ${token}` }
-                                });
-
-                                toast.success('Payment successful!');
-                                router.push('/orders');
-                                dispatch(fetchCart({getToken}));
-                            } catch (error) {
-                                toast.error('Payment verification failed');
-                            }
-                        },
+                            toast.success('Payment successful!');
+                            router.push('/orders');
+                            dispatch(fetchCart({getToken}));
+                        } catch (error) {
+                            console.error('Full error:', error);
+                            console.error('Error response:', error.response);
+                            console.error('Error data:', error.response?.data);
+                            toast.error('Payment verification failed');
+                        }
+                    },
                         prefill: {
                             name: user.fullName,
                             email: user.primaryEmailAddress?.emailAddress,
