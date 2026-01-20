@@ -4,6 +4,10 @@ import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 async function main(base64Image, mimeType) {
+
+    
+    console.log("hello")
+
     const messages = [
         {
             role: "system",
