@@ -19,34 +19,56 @@ export async function OPTIONS() {
 
 
 async function main(base64Image, mimeType) {
-
-    
-    console.log("hello")
-
-    const response = await openai.responses.create({
-
-        model: "gpt-4.1-mini",
-        input: [
-            {
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.OPENAI_API_KEY}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        contents: [
+          {
             role: "user",
-            content: [
-                { type: "input_text", text: "Analyze this product image and return JSON with name and description only." },
-                {
-                type: "input_image",
-                image_url: `data:${mimeType};base64,${base64Image}`,
+            parts: [
+              {
+                text: "Analyze this product image and return ONLY valid JSON with name and description.",
+              },
+              {
+                inline_data: {
+                  mime_type: mimeType,
+                  data: base64Image,
                 },
+              },
             ],
-            },
+          },
         ],
-        max_output_tokens: 300,
+      }),
+    }
+  );
 
-        });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Gemini error ${response.status}: ${text}`);
+  }
 
+  const data = await response.json();
 
-        const raw = response.output[0].content[0].text;
-        const parsed = JSON.parse(raw);
-        return parsed;
+  const raw =
+    data.candidates?.[0]?.content?.parts?.[0]?.text;
 
+  if (!raw) {
+    throw new Error("Gemini returned no text output");
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new Error("Gemini did not return valid JSON");
+  }
+
+  return parsed;
 }
 
 
