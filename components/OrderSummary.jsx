@@ -43,6 +43,16 @@ const OrderSummary = ({ totalPrice, items }) => {
         
     }
 
+    const loadRazorpayScript = () => {
+        return new Promise((resolve) => {
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+        });
+    };
+
     const handlePlaceOrder = async (e) => {
         e.preventDefault();
         try {
@@ -63,24 +73,67 @@ const OrderSummary = ({ totalPrice, items }) => {
             if(coupon){
                 orderData.couponCode = coupon.code
             }
-           // create order
+           
+           // Create order
            const {data} = await axios.post('/api/orders', orderData, {
             headers: { Authorization: `Bearer ${token}` }
            })
 
            if(paymentMethod === 'STRIPE'){
-            window.location.href = data.session.url;
-           }else{
-            toast.success(data.message)
-            router.push('/orders')
-            dispatch(fetchCart({getToken}))
+                // Load Razorpay script
+                const res = await loadRazorpayScript();
+                
+                if (!res) {
+                    toast.error('Razorpay SDK failed to load');
+                    return;
+                }
+
+                const options = {
+                    key: data.keyId,
+                    amount: data.razorpayOrder.amount,
+                    currency: data.razorpayOrder.currency,
+                    name: 'GoCart',
+                    description: 'Order Payment',
+                    order_id: data.razorpayOrder.id,
+                    handler: async function (response) {
+                        try {
+                            // Verify payment
+                            await axios.post('/api/verify-payment', {
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature,
+                                orderIds: data.orderIds
+                            }, {
+                                headers: { Authorization: `Bearer ${token}` }
+                            });
+
+                            toast.success('Payment successful!');
+                            router.push('/orders');
+                            dispatch(fetchCart({getToken}));
+                        } catch (error) {
+                            toast.error('Payment verification failed');
+                        }
+                    },
+                    prefill: {
+                        name: user.fullName,
+                        email: user.primaryEmailAddress?.emailAddress,
+                    },
+                    theme: {
+                        color: '#334155'
+                    }
+                };
+
+                const paymentObject = new window.Razorpay(options);
+                paymentObject.open();
+           } else {
+                toast.success(data.message)
+                router.push('/orders')
+                dispatch(fetchCart({getToken}))
            }
 
         } catch (error) {
             toast.error(error?.response?.data?.error || error.message)
         }
-
-        
     }
 
     return (
@@ -93,7 +146,7 @@ const OrderSummary = ({ totalPrice, items }) => {
             </div>
             <div className='flex gap-2 items-center mt-1'>
                 <input type="radio" id="STRIPE" name='payment' onChange={() => setPaymentMethod('STRIPE')} checked={paymentMethod === 'STRIPE'} className='accent-gray-500' />
-                <label htmlFor="STRIPE" className='cursor-pointer'>Stripe Payment</label>
+                <label htmlFor="STRIPE" className='cursor-pointer'>Razorpay Payment</label>
             </div>
             <div className='my-4 py-4 border-y border-slate-200 text-slate-400'>
                 <p>Address</p>

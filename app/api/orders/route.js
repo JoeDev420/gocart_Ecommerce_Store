@@ -2,8 +2,7 @@ import prisma from "@/lib/prisma";
 import { getAuth } from "@clerk/nextjs/server";
 import { PaymentMethod } from "@prisma/client";
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
-
+import Razorpay from "razorpay";
 
 export async function POST(request){
     try {
@@ -108,7 +107,7 @@ export async function POST(request){
 
                 fullAmount += parseFloat(total.toFixed(2))
 
-                const order = await tx.order.create({  // Changed to tx
+                const order = await tx.order.create({
                     data: {
                         userId,
                         storeId,
@@ -153,33 +152,30 @@ export async function POST(request){
             })
         })
 
+        // Razorpay Integration (using STRIPE enum value)
         if(paymentMethod === 'STRIPE'){
-            const stripe = Stripe(process.env.RAZORPAY_SECRET_KEY)
-            const origin = await request.headers.get('origin')
+            const razorpay = new Razorpay({
+                key_id: process.env.RAZORPAY_KEY_ID,
+                key_secret: process.env.RAZORPAY_SECRET_KEY
+            })
 
-            const session = await stripe.checkout.sessions.create({
-                payment_method_types: ['card'],
-                line_items: [{
-                    price_data:{
-                        currency: 'usd',
-                        product_data:{
-                            name: 'Order'
-                        },
-                        unit_amount: Math.round(fullAmount * 100)
-                    },
-                    quantity: 1
-                }],
-                expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
-                mode: 'payment',
-                success_url: `${origin}/loading?nextUrl=orders`,
-                cancel_url: `${origin}/cart`,
-                metadata: {
+            // Create Razorpay order
+            const razorpayOrder = await razorpay.orders.create({
+                amount: Math.round(fullAmount * 100), // Amount in paise (INR)
+                currency: 'INR',
+                receipt: `order_${orderIds.join('_')}`,
+                notes: {
                     orderIds: orderIds.join(','),
                     userId,
                     appId: 'gocart'
                 }
             })
-            return NextResponse.json({session})
+
+            return NextResponse.json({
+                razorpayOrder,
+                orderIds,
+                keyId: process.env.RAZORPAY_KEY_ID
+            })
         }
 
         return NextResponse.json({message: 'Orders Placed Successfully'})
