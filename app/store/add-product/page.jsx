@@ -68,7 +68,7 @@ export default function StoreAddProduct() {
                                 err?.response?.data?.error || err.message
                         }
                     )
-                } catch (error) {
+                } catch (err) {
                    console.log("AXIOS ERROR FULL:", err);
                     console.log("AXIOS RESPONSE:", err?.response);
                     console.log("AXIOS RESPONSE DATA:", err?.response?.data);
