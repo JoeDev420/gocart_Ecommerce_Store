@@ -98,7 +98,7 @@ const OrderSummary = ({ totalPrice, items }) => {
                     handler: async function (response) {
                         try {
                             // Verify payment
-                            await axios.post('/api/verify-payment', {
+                            await axios.post('/api/razorpay/verify-payment', {
                                 razorpay_order_id: response.razorpay_order_id,
                                 razorpay_payment_id: response.razorpay_payment_id,
                                 razorpay_signature: response.razorpay_signature,
