@@ -69,7 +69,11 @@ export default function StoreAddProduct() {
                         }
                     )
                 } catch (error) {
-                    console.error(error)
+                   console.log("AXIOS ERROR FULL:", err);
+                    console.log("AXIOS RESPONSE:", err?.response);
+                    console.log("AXIOS RESPONSE DATA:", err?.response?.data);
+                    console.log("AXIOS STATUS:", err?.response?.status);
+                    toast.error("Check console for full error");
                 }
             }
         }
