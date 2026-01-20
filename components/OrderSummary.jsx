@@ -97,6 +97,10 @@
                         order_id: data.razorpayOrder.id,
                         handler: async function (response) {
                             try {
+
+                                 console.log('Order IDs:', data.orderIds);  // ← Add this line
+                                 console.log('Response:', response);     
+
                                 // Verify payment
                                 await axios.post('/api/verify-payment', {
                                     razorpay_order_id: response.razorpay_order_id,
