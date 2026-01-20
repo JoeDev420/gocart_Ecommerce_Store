@@ -38,8 +38,6 @@ export async function POST(request) {
                 },
                 data: {
                     isPaid: true,
-                    stripeSessionId: razorpay_order_id,
-                    stripePaymentIntentId: razorpay_payment_id
                 }
             });
             return NextResponse.json({ 
