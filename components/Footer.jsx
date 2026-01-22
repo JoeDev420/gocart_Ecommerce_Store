@@ -173,9 +173,7 @@ const Footer = () => {
 
         </div>
 
-        <p className="py-4 text-sm text-slate-500">
-          Copyright 2025 © gocart. All rights reserved.
-        </p>
+        
       </div>
     </footer>
   );
