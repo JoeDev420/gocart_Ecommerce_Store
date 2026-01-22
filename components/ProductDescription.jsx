@@ -11,7 +11,7 @@ const ProductDescription = ({ product }) => {
     return (
         <div className="my-18 text-sm text-slate-600">
 
-            {/* Tabs */}
+        
             <div className="flex border-b border-slate-200 mb-6 max-w-2xl">
                 {['Description', 'Reviews'].map((tab, index) => (
                     <button className={`${tab === selectedTab ? 'border-b-[1.5px] font-semibold' : 'text-slate-400'} px-3 py-2 font-medium`} key={index} onClick={() => setSelectedTab(tab)}>
@@ -20,12 +20,12 @@ const ProductDescription = ({ product }) => {
                 ))}
             </div>
 
-            {/* Description */}
+       
             {selectedTab === "Description" && (
                 <p className="max-w-xl">{product.description}</p>
             )}
 
-            {/* Reviews */}
+     
             {selectedTab === "Reviews" && (
                 <div className="flex flex-col gap-3 mt-14">
                     {product.rating.map((item,index) => (
@@ -46,7 +46,6 @@ const ProductDescription = ({ product }) => {
                 </div>
             )}
 
-            {/* Store Page */}
             <div className="flex gap-3 mt-14">
                 <Image src={product.store.logo} alt="" className="size-11 rounded-full ring ring-slate-400" width={100} height={100} />
                 <div>

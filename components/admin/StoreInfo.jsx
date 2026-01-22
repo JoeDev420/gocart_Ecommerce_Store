@@ -10,7 +10,6 @@ const StoreInfo = ({store}) => {
                 <h3 className="text-xl font-semibold text-slate-800"> {store.name} </h3>
                 <span className="text-sm">@{store.username}</span>
 
-                {/* Status Badge */}
                 <span
                     className={`text-xs font-semibold px-4 py-1 rounded-full ${store.status === 'pending'
                         ? 'bg-yellow-100 text-yellow-800'
