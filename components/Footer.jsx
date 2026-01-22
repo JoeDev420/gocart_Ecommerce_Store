@@ -117,7 +117,7 @@ const Footer = () => {
 
   const socialIcons = [
     { icon: LinkedinIcon, link: "https://www.linkedin.com/in/anant-singh-b33a93373/" },
-    { icon: GithubIcon, link: "https://github.com/JoeDev420" },
+    { icon: GithubIcon, link: "https://github.com/JoeDev420/gocart_Ecommerce_Store"},
     { icon: ResumeIcon, link: "#" } // add live resume URL later
   ];
 
