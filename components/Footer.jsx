@@ -118,13 +118,13 @@ const Footer = () => {
   const socialIcons = [
     { icon: LinkedinIcon, link: "https://www.linkedin.com/in/anant-singh-b33a93373/" },
     { icon: GithubIcon, link: "https://github.com/JoeDev420/gocart_Ecommerce_Store"},
-    { icon: ResumeIcon, link: "#" } // add live resume URL later
+    { icon: ResumeIcon, link: "https://eazy-resume.vercel.app/view/anant-singh-resume-51823" }
   ];
 
   /* ---------------- JSX ---------------- */
 
   return (
-    <footer className="mx-6 bg-white">
+    <footer id="contact" className="mx-6 bg-white">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between gap-10 py-10 border-b border-slate-500/30 text-slate-500">
 
